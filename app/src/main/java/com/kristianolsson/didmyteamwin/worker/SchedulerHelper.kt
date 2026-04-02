@@ -30,18 +30,31 @@ object SchedulerHelper {
 
         return try {
             val response = RetrofitInstance.api.getNextEvents(teamId)
-            val event = response.events?.firstOrNull()
+            val events = response.events
+
+            if (events.isNullOrEmpty()) {
+                Log.i(TAG, "No upcoming games for team $teamId — will poll in 24hrs")
+                dao.updateNextEvent(teamId, null, null, null)
+                scheduleEventPoll(context, teamId)
+                return false
+            }
+
+            // Skip events that already have scores (API sometimes returns finished games)
+            val event = events.firstOrNull { e ->
+                e.intHomeScore.isNullOrBlank() && e.intAwayScore.isNullOrBlank()
+            }
 
             if (event == null) {
-                Log.i(TAG, "No upcoming games for team $teamId")
+                Log.i(TAG, "All ${events.size} events for team $teamId already have scores — will poll in 24hrs")
                 dao.updateNextEvent(teamId, null, null, null)
+                scheduleEventPoll(context, teamId)
                 return false
             }
 
             val gameTimeUtc = parseTimestamp(event.strTimestamp)
             val checkTime = gameTimeUtc.plus(GAME_DURATION_BUFFER)
             val now = Instant.now()
-            val delayMs = Duration.between(now, checkTime).toMillis().coerceAtLeast(0)
+            val delayMs = Duration.between(now, checkTime).toMillis().coerceAtLeast(60_000) // min 1 minute
 
             Log.i(TAG, "Scheduling check for ${event.strEvent} at $checkTime (delay: ${delayMs}ms)")
 
@@ -70,10 +83,31 @@ object SchedulerHelper {
     }
 
     /**
+     * Schedule a 24hr poll to re-check for upcoming events.
+     * Used when the API has no upcoming games (off-season, between rounds, etc.)
+     */
+    private fun scheduleEventPoll(context: Context, teamId: String) {
+        val workRequest = OneTimeWorkRequestBuilder<NextEventPollWorker>()
+            .setInitialDelay(24, TimeUnit.HOURS)
+            .setInputData(workDataOf("teamId" to teamId))
+            .addTag("event_poll_$teamId")
+            .build()
+
+        WorkManager.getInstance(context).enqueueUniqueWork(
+            "event_poll_$teamId",
+            ExistingWorkPolicy.REPLACE,
+            workRequest,
+        )
+
+        Log.i(TAG, "Scheduled 24hr poll for team $teamId")
+    }
+
+    /**
      * Cancel any pending game check work for [teamId].
      */
     fun cancelForTeam(context: Context, teamId: String) {
         WorkManager.getInstance(context).cancelUniqueWork("game_check_$teamId")
+        WorkManager.getInstance(context).cancelUniqueWork("event_poll_$teamId")
     }
 
     private fun parseTimestamp(timestamp: String): Instant {

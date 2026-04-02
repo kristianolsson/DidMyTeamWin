@@ -68,8 +68,12 @@ class GameCheckWorker(
                         applicationContext, teamId, team.name,
                     )
 
-                    // Schedule next game
-                    SchedulerHelper.scheduleNextGame(applicationContext, teamId)
+                    // Schedule next game (don't let failures here trigger error notification)
+                    try {
+                        SchedulerHelper.scheduleNextGame(applicationContext, teamId)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to schedule next game after result for ${team.name}", e)
+                    }
                     Result.success()
                 }
 
@@ -79,7 +83,11 @@ class GameCheckWorker(
                         applicationContext, teamId, team.name,
                     )
                     dao.updateNextEvent(teamId, null, null, null)
-                    SchedulerHelper.scheduleNextGame(applicationContext, teamId)
+                    try {
+                        SchedulerHelper.scheduleNextGame(applicationContext, teamId)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to schedule next game after cancellation for ${team.name}", e)
+                    }
                     Result.success()
                 }
 
@@ -92,7 +100,11 @@ class GameCheckWorker(
                             "Could not get result after ${MAX_RETRIES}hrs — game may still be in progress",
                         )
                         dao.updateNextEvent(teamId, null, null, null)
-                        SchedulerHelper.scheduleNextGame(applicationContext, teamId)
+                        try {
+                            SchedulerHelper.scheduleNextGame(applicationContext, teamId)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed to schedule next game after max retries for ${team.name}", e)
+                        }
                         Result.success()
                     } else {
                         dao.incrementRetry(teamId)
@@ -113,7 +125,11 @@ class GameCheckWorker(
         val dao = AppDatabase.getInstance(applicationContext).trackedTeamDao()
         dao.updateNextEvent(teamId, null, null, null)
         // Still try to schedule the next game
-        SchedulerHelper.scheduleNextGame(applicationContext, teamId)
+        try {
+            SchedulerHelper.scheduleNextGame(applicationContext, teamId)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to schedule next game after error for $teamName", e)
+        }
     }
 
     private fun buildSummary(
