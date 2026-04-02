@@ -72,11 +72,13 @@ fun TeamListScreen(
     Scaffold(
         containerColor = Color.Transparent,
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddTeam,
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add team")
+            if (teams.isNotEmpty()) {
+                FloatingActionButton(
+                    onClick = onAddTeam,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Add team")
+                }
             }
         },
     ) { padding ->
