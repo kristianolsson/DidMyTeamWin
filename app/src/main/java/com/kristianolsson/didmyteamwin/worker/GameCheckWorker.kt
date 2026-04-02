@@ -147,10 +147,20 @@ class GameCheckWorker(
         val opponentScore = if (isHome) awayScore else homeScore
         val leagueSuffix = if (league != null) " in $league" else ""
 
+        val isUs = java.util.Locale.getDefault().country == "US"
+        val scoreText = if (isUs) {
+            // US: winning score first
+            if (teamScore >= opponentScore) "$teamScore-$opponentScore"
+            else "$opponentScore-$teamScore"
+        } else {
+            // EU: home score first
+            "$homeScore-$awayScore"
+        }
+
         return when {
-            teamScore > opponentScore -> "$trackedName beat $opponent $teamScore-$opponentScore$leagueSuffix"
-            teamScore < opponentScore -> "$trackedName lost to $opponent $opponentScore-$teamScore$leagueSuffix"
-            else -> "$trackedName drew with $opponent $teamScore-$opponentScore$leagueSuffix"
+            teamScore > opponentScore -> "$trackedName beat $opponent $scoreText$leagueSuffix"
+            teamScore < opponentScore -> "$trackedName lost to $opponent $scoreText$leagueSuffix"
+            else -> "$trackedName drew with $opponent $scoreText$leagueSuffix"
         }
     }
 }

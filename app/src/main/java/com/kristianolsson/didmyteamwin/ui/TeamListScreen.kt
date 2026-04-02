@@ -17,10 +17,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,9 +50,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.kristianolsson.didmyteamwin.R
 import com.kristianolsson.didmyteamwin.data.db.TrackedTeam
+import java.time.Duration
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,25 +115,65 @@ fun TeamListScreen(
 
             // Content zone — darker area
             if (teams.isEmpty()) {
-                Box(
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .weight(1f),
-                    contentAlignment = Alignment.Center,
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 32.dp, vertical = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            "No teams tracked yet",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            "Tap + to add a team",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                    Spacer(Modifier.height(16.dp))
+
+                    WelcomeItem(
+                        emoji = "\uD83C\uDFC6",
+                        title = "Track your teams",
+                        description = "Search and add teams you follow",
+                    )
+                    Spacer(Modifier.height(20.dp))
+                    WelcomeItem(
+                        emoji = "\uD83D\uDD15",
+                        title = "Spoiler-free results",
+                        description = "Get notified when a game ends — scores are hidden until you're ready",
+                    )
+                    Spacer(Modifier.height(20.dp))
+                    WelcomeItem(
+                        emoji = "\uD83D\uDCC5",
+                        title = "Automatic scheduling",
+                        description = "The app monitors upcoming games and checks results for you",
+                    )
+                    Spacer(Modifier.height(20.dp))
+                    WelcomeItem(
+                        emoji = "\uD83D\uDD12",
+                        title = "Runs completely local",
+                        description = "No account needed. Your data stays on your device.",
+                    )
+
+                    Spacer(Modifier.height(32.dp))
+
+                    Button(
+                        onClick = onAddTeam,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        ),
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Add a team", style = MaterialTheme.typography.titleSmall)
                     }
+
+                    Spacer(Modifier.height(24.dp))
+
+                    Text(
+                        "Powered by TheSportsDB",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                    )
                 }
             } else {
                 LazyColumn(
@@ -224,15 +275,21 @@ private fun TeamCard(
                         )
                     }
                     team.nextEventName != null -> {
+                        val checkTimeText = team.nextEventTimestamp?.let {
+                            formatCheckTime(it)
+                        }
                         Text(
-                            text = "⏳ Next: ${team.nextEventName}",
+                            text = if (checkTimeText != null)
+                                "⏳ ${team.nextEventName} · checking $checkTimeText"
+                            else
+                                "⏳ Next: ${team.nextEventName}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                     else -> {
                         Text(
-                            text = "No upcoming games",
+                            text = "🔍 Checking for next game...",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -249,5 +306,59 @@ private fun TeamCard(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun WelcomeItem(
+    emoji: String,
+    title: String,
+    description: String,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top,
+    ) {
+        Text(
+            text = emoji,
+            fontSize = 28.sp,
+            modifier = Modifier.padding(end = 16.dp, top = 2.dp),
+        )
+        Column {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+private fun formatCheckTime(gameTimestamp: String): String? {
+    return try {
+        val gameTime = Instant.parse("${gameTimestamp}Z")
+        val checkTime = gameTime.plus(Duration.ofHours(3))
+        val now = Instant.now()
+        val hoursUntil = Duration.between(now, checkTime).toHours()
+
+        when {
+            checkTime.isBefore(now) -> "soon"
+            hoursUntil < 1 -> "in <1 hour"
+            hoursUntil < 24 -> "in ${hoursUntil}h"
+            else -> {
+                val formatter = DateTimeFormatter.ofPattern("MMM d 'at' h:mm a")
+                    .withZone(ZoneId.systemDefault())
+                formatter.format(checkTime)
+            }
+        }
+    } catch (e: Exception) {
+        null
     }
 }

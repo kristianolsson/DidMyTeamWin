@@ -49,6 +49,7 @@ fun ResultScreen(
     val teams by viewModel.teams.collectAsState()
     val team = teams.find { it.idTeam == teamId }
     var revealed by remember { mutableStateOf(team?.lastResultRevealed ?: false) }
+    val isUs = remember { java.util.Locale.getDefault().country == "US" }
 
     Scaffold(
         topBar = {
@@ -78,6 +79,13 @@ fun ResultScreen(
             return@Scaffold
         }
 
+        // US: Away @ Home, EU: Home vs Away
+        val topTeam = if (isUs) team.lastAwayTeam else team.lastHomeTeam
+        val bottomTeam = if (isUs) team.lastHomeTeam else team.lastAwayTeam
+        val topScore = if (isUs) (team.lastAwayScore ?: 0) else (team.lastHomeScore ?: 0)
+        val bottomScore = if (isUs) (team.lastHomeScore ?: 0) else (team.lastAwayScore ?: 0)
+        val separator = if (isUs) "@" else "vs"
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -88,7 +96,7 @@ fun ResultScreen(
         ) {
             // Teams
             Text(
-                text = team.lastHomeTeam ?: "",
+                text = topTeam ?: "",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
@@ -97,7 +105,7 @@ fun ResultScreen(
             Spacer(Modifier.height(8.dp))
 
             Text(
-                text = "vs",
+                text = separator,
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -105,7 +113,7 @@ fun ResultScreen(
             Spacer(Modifier.height(8.dp))
 
             Text(
-                text = team.lastAwayTeam ?: "",
+                text = bottomTeam ?: "",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
@@ -160,7 +168,7 @@ fun ResultScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            text = "${team.lastHomeScore ?: 0}",
+                            text = "$topScore",
                             style = MaterialTheme.typography.displayLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary,
@@ -171,7 +179,7 @@ fun ResultScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
-                            text = "${team.lastAwayScore ?: 0}",
+                            text = "$bottomScore",
                             style = MaterialTheme.typography.displayLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary,
