@@ -358,7 +358,7 @@ private fun WelcomeItem(
 private fun formatCheckTime(gameTimestamp: String): String? {
     return try {
         val gameTime = Instant.parse("${gameTimestamp}Z")
-        val checkTime = gameTime.plus(Duration.ofHours(3))
+        val checkTime = gameTime.plus(Duration.ofHours(2))
         val now = Instant.now()
         val hoursUntil = Duration.between(now, checkTime).toHours()
 

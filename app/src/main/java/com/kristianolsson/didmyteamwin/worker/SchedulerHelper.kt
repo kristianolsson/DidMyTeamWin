@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 object SchedulerHelper {
 
     private const val TAG = "SchedulerHelper"
-    private val GAME_DURATION_BUFFER = Duration.ofHours(3)
+    private val GAME_DURATION_BUFFER = Duration.ofHours(2)
 
     /**
      * Fetches the next game for [teamId] from the API and schedules a WorkManager
@@ -33,7 +33,7 @@ object SchedulerHelper {
             val events = response.events
 
             if (events.isNullOrEmpty()) {
-                Log.i(TAG, "No upcoming games for team $teamId — will poll in 24hrs")
+                Log.i(TAG, "No upcoming games for team $teamId — will poll in 6hrs")
                 dao.updateNextEvent(teamId, null, null, null)
                 scheduleEventPoll(context, teamId)
                 return false
@@ -45,7 +45,7 @@ object SchedulerHelper {
             }
 
             if (event == null) {
-                Log.i(TAG, "All ${events.size} events for team $teamId already have scores — will poll in 24hrs")
+                Log.i(TAG, "All ${events.size} events for team $teamId already have scores — will poll in 6hrs")
                 dao.updateNextEvent(teamId, null, null, null)
                 scheduleEventPoll(context, teamId)
                 return false
@@ -88,7 +88,7 @@ object SchedulerHelper {
      */
     private fun scheduleEventPoll(context: Context, teamId: String) {
         val workRequest = OneTimeWorkRequestBuilder<NextEventPollWorker>()
-            .setInitialDelay(24, TimeUnit.HOURS)
+            .setInitialDelay(6, TimeUnit.HOURS)
             .setInputData(workDataOf("teamId" to teamId))
             .addTag("event_poll_$teamId")
             .build()
@@ -99,7 +99,7 @@ object SchedulerHelper {
             workRequest,
         )
 
-        Log.i(TAG, "Scheduled 24hr poll for team $teamId")
+        Log.i(TAG, "Scheduled 6hr poll for team $teamId")
     }
 
     /**
