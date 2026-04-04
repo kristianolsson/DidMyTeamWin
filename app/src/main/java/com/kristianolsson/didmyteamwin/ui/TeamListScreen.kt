@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -46,6 +47,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -170,23 +172,17 @@ fun TeamListScreen(
                     }
 
                     Spacer(Modifier.height(24.dp))
-
-                    Text(
-                        "Powered by TheSportsDB",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                    )
                 }
             } else {
                 LazyColumn(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxWidth()
                         .weight(1f),
                     contentPadding = PaddingValues(
                         start = 16.dp,
                         end = 16.dp,
                         top = 12.dp,
-                        bottom = padding.calculateBottomPadding() + 8.dp,
+                        bottom = 12.dp,
                     ),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
@@ -198,6 +194,22 @@ fun TeamListScreen(
                         )
                     }
                 }
+            }
+
+            // Persistent footer
+            val uriHandler = LocalUriHandler.current
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { uriHandler.openUri("https://www.thesportsdb.com") }
+                    .padding(bottom = padding.calculateBottomPadding() + 12.dp, top = 8.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    "Powered by TheSportsDB",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                )
             }
         }
     }

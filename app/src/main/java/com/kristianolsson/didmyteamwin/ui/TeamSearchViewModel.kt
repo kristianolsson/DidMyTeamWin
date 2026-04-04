@@ -32,7 +32,7 @@ class TeamSearchViewModel(application: Application) : AndroidViewModel(applicati
         viewModelScope.launch {
             _query
                 .debounce(500)
-                .filter { it.length >= 2 }
+                .filter { it.trim().length >= 2 }
                 .collectLatest { searchTerm ->
                     search(searchTerm)
                 }
@@ -41,17 +41,19 @@ class TeamSearchViewModel(application: Application) : AndroidViewModel(applicati
 
     fun updateQuery(newQuery: String) {
         _query.value = newQuery
-        if (newQuery.length < 2) {
+        if (newQuery.trim().length < 2) {
             _results.value = emptyList()
             _error.value = null
         }
     }
 
     private suspend fun search(term: String) {
+        val trimmed = term.trim()
+        if (trimmed.length < 2) return
         _isLoading.value = true
         _error.value = null
         try {
-            val response = RetrofitInstance.api.searchTeams(term)
+            val response = RetrofitInstance.api.searchTeams(trimmed)
             _results.value = response.teams ?: emptyList()
         } catch (e: Exception) {
             _error.value = "Search failed: ${e.message}"

@@ -72,7 +72,10 @@ class MainActivity : ComponentActivity() {
                         composable("teams") {
                             TeamListScreen(
                                 viewModel = teamListViewModel,
-                                onAddTeam = { navController.navigate("search") },
+                                onAddTeam = {
+                                    teamSearchViewModel.updateQuery("")
+                                    navController.navigate("search")
+                                },
                                 onTeamClick = { teamId ->
                                     navController.navigate("result/$teamId")
                                 },
