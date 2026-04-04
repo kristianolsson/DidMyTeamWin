@@ -296,7 +296,7 @@ private fun TeamCard(
                             text = if (checkTimeText != null)
                                 "⏳ ${team.nextEventName} · checking $checkTimeText"
                             else
-                                "⏳ Next: ${team.nextEventName}",
+                                "⏳ No result yet · checking again ${formatRetryTime()}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -355,15 +355,15 @@ private fun WelcomeItem(
     }
 }
 
+// Returns a display string for when the first check fires, or null if that time has already passed.
 private fun formatCheckTime(gameTimestamp: String): String? {
     return try {
         val gameTime = Instant.parse("${gameTimestamp}Z")
         val checkTime = gameTime.plus(Duration.ofHours(2))
         val now = Instant.now()
+        if (checkTime.isBefore(now)) return null
         val hoursUntil = Duration.between(now, checkTime).toHours()
-
         when {
-            checkTime.isBefore(now) -> "soon"
             hoursUntil < 1 -> "in <1 hour"
             hoursUntil < 24 -> "in ${hoursUntil}h"
             else -> {
@@ -374,5 +374,17 @@ private fun formatCheckTime(gameTimestamp: String): String? {
         }
     } catch (e: Exception) {
         null
+    }
+}
+
+// Returns a display string for the next hourly retry (~now + 1hr).
+private fun formatRetryTime(): String {
+    return try {
+        val nextCheck = Instant.now().plus(Duration.ofHours(1))
+        val formatter = DateTimeFormatter.ofPattern("h:mm a")
+            .withZone(ZoneId.systemDefault())
+        "at ${formatter.format(nextCheck)}"
+    } catch (e: Exception) {
+        "soon"
     }
 }
