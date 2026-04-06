@@ -40,6 +40,9 @@ class GameCheckWorker(
 
             val status = event.strStatus?.uppercase() ?: ""
             val postponed = event.strPostponed?.lowercase() == "yes"
+            val hasScores = !event.intHomeScore.isNullOrBlank() || !event.intAwayScore.isNullOrBlank()
+            val liveStatuses = setOf("NS", "LIVE", "HT", "1H", "2H", "ET", "BT", "Q1", "Q2", "Q3", "Q4", "OT", "INT", "SUSP")
+            val isLive = status in liveStatuses || hasScores
 
             when {
                 // Game finished
@@ -77,8 +80,8 @@ class GameCheckWorker(
                     Result.success()
                 }
 
-                // Game postponed or cancelled
-                postponed || status == "PST" || status == "CANC" || status == "ABD" -> {
+                // Game postponed or cancelled — only if not currently live/in-progress
+                !isLive && (postponed || status == "PST" || status == "CANC" || status == "ABD") -> {
                     NotificationHelper.showCancelledNotification(
                         applicationContext, teamId, team.name,
                     )
