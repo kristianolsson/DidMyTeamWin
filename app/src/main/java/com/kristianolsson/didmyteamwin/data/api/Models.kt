@@ -34,7 +34,7 @@ data class Event(
     val intAwayScore: String?,
     val strLeague: String?,
     val dateEvent: String?,
-    val strTimestamp: String,
+    val strTimestamp: String?,
     val strStatus: String?,
     val strPostponed: String?,
     val idHomeTeam: String?,

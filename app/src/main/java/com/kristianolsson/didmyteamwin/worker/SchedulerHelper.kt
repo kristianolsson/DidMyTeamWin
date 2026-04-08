@@ -39,19 +39,22 @@ object SchedulerHelper {
                 return false
             }
 
-            // Skip events that already have scores (API sometimes returns finished games)
+            // Pick the first upcoming event that has no scores and a valid timestamp
             val event = events.firstOrNull { e ->
                 e.intHomeScore.isNullOrBlank() && e.intAwayScore.isNullOrBlank()
+                    && !e.strTimestamp.isNullOrBlank()
             }
 
             if (event == null) {
-                Log.i(TAG, "All ${events.size} events for team $teamId already have scores — will poll in 6hrs")
+                val reason = if (events.none { it.strTimestamp.isNullOrBlank().not() })
+                    "no events have a timestamp" else "all events already have scores"
+                Log.i(TAG, "No schedulable event for team $teamId ($reason) — will poll in 6hrs")
                 dao.updateNextEvent(teamId, null, null, null)
                 scheduleEventPoll(context, teamId)
                 return false
             }
 
-            val gameTimeUtc = parseTimestamp(event.strTimestamp)
+            val gameTimeUtc = parseTimestamp(event.strTimestamp!!)
             val checkTime = gameTimeUtc.plus(GAME_DURATION_BUFFER)
             val now = Instant.now()
             val delayMs = Duration.between(now, checkTime).toMillis().coerceAtLeast(60_000) // min 1 minute
