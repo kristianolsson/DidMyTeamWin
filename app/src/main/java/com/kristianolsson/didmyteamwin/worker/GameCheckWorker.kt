@@ -40,13 +40,19 @@ class GameCheckWorker(
 
             val status = event.strStatus?.uppercase() ?: ""
             val postponed = event.strPostponed?.lowercase() == "yes"
-            val hasScores = !event.intHomeScore.isNullOrBlank() || !event.intAwayScore.isNullOrBlank()
-            val liveStatuses = setOf("NS", "LIVE", "HT", "1H", "2H", "ET", "BT", "Q1", "Q2", "Q3", "Q4", "OT", "INT", "SUSP")
-            val isLive = status in liveStatuses || hasScores
+            val hasScores = !event.intHomeScore.isNullOrBlank() && !event.intAwayScore.isNullOrBlank()
+            // TheSportsDB returns "Match Finished" for completed games (all competitions)
+            val finishedStatuses = setOf("FT", "AET", "PEN", "MATCH FINISHED")
+            // "Not Started" is what TheSportsDB returns for upcoming games
+            val liveStatuses = setOf("NOT STARTED", "NS", "LIVE", "HT", "1H", "2H", "ET", "BT", "Q1", "Q2", "Q3", "Q4", "OT", "INT", "SUSP")
+            val isFinished = status in finishedStatuses
+            val isLive = !isFinished && (status in liveStatuses || hasScores)
+
+            Log.i(TAG, "Event $eventId status='$status' scores=${event.intHomeScore}-${event.intAwayScore} isFinished=$isFinished isLive=$isLive")
 
             when {
                 // Game finished
-                status == "FT" || status == "AET" || status == "PEN" -> {
+                isFinished -> {
                     val homeScore = event.intHomeScore?.toIntOrNull() ?: 0
                     val awayScore = event.intAwayScore?.toIntOrNull() ?: 0
                     val summary = buildSummary(
