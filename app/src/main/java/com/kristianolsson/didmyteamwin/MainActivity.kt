@@ -18,6 +18,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.kristianolsson.didmyteamwin.notification.NotificationHelper
+import com.kristianolsson.didmyteamwin.ui.DebugScreen
+import com.kristianolsson.didmyteamwin.ui.DebugViewModel
 import com.kristianolsson.didmyteamwin.ui.ResultScreen
 import com.kristianolsson.didmyteamwin.ui.TeamListScreen
 import com.kristianolsson.didmyteamwin.ui.TeamListViewModel
@@ -29,6 +31,7 @@ class MainActivity : ComponentActivity() {
 
     private val teamListViewModel: TeamListViewModel by viewModels()
     private val teamSearchViewModel: TeamSearchViewModel by viewModels()
+    private val debugViewModel: DebugViewModel by viewModels()
 
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { _ ->
@@ -79,6 +82,17 @@ class MainActivity : ComponentActivity() {
                                 onTeamClick = { teamId ->
                                     navController.navigate("result/$teamId")
                                 },
+                                onDebug = {
+                                    debugViewModel.refresh()
+                                    navController.navigate("debug")
+                                },
+                            )
+                        }
+
+                        composable("debug") {
+                            DebugScreen(
+                                viewModel = debugViewModel,
+                                onBack = { navController.popBackStack() },
                             )
                         }
 

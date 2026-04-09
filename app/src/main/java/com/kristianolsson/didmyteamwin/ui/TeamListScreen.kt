@@ -25,6 +25,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -67,6 +68,7 @@ fun TeamListScreen(
     viewModel: TeamListViewModel,
     onAddTeam: () -> Unit,
     onTeamClick: (String) -> Unit,
+    onDebug: () -> Unit,
 ) {
     val teams by viewModel.teams.collectAsState()
     val bgColor = MaterialTheme.colorScheme.background
@@ -109,6 +111,17 @@ fun TeamListScreen(
                             )
                         )
                 )
+                // Debug button
+                IconButton(
+                    onClick = onDebug,
+                    modifier = Modifier.align(Alignment.TopEnd),
+                ) {
+                    Icon(
+                        Icons.Default.Info,
+                        contentDescription = "Debug",
+                        tint = Color.White.copy(alpha = 0.4f),
+                    )
+                }
             }
 
             // Divider between header and content
