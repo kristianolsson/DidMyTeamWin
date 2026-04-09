@@ -289,15 +289,17 @@ private fun TeamCard(
                 Spacer(Modifier.height(4.dp))
 
                 // Status line
+                val resultWithin24h = team.lastResultFetchedAt != null &&
+                    (System.currentTimeMillis() - team.lastResultFetchedAt) < 24 * 60 * 60 * 1000L
                 when {
-                    team.lastResultSummary != null && !team.lastResultRevealed -> {
+                    team.lastResultSummary != null && !team.lastResultRevealed && resultWithin24h -> {
                         Text(
                             text = "🔔 Result available — tap to reveal",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.secondary,
                         )
                     }
-                    team.lastResultSummary != null && team.lastResultRevealed -> {
+                    team.lastResultSummary != null && team.lastResultRevealed && resultWithin24h -> {
                         Text(
                             text = team.lastResultSummary,
                             style = MaterialTheme.typography.bodySmall,

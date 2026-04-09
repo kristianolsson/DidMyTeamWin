@@ -65,6 +65,7 @@ class GameCheckWorker(
                     dao.updateLastResult(
                         teamId = teamId,
                         summary = summary,
+                        fetchedAt = System.currentTimeMillis(),
                         homeTeam = event.strHomeTeam,
                         awayTeam = event.strAwayTeam,
                         homeScore = homeScore,

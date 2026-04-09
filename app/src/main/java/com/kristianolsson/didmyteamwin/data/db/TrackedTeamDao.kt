@@ -44,9 +44,10 @@ interface TrackedTeamDao {
     suspend fun incrementRetry(teamId: String)
 
     @Query("""
-        UPDATE tracked_teams 
+        UPDATE tracked_teams
         SET lastResultSummary = :summary,
             lastResultRevealed = 0,
+            lastResultFetchedAt = :fetchedAt,
             lastHomeTeam = :homeTeam,
             lastAwayTeam = :awayTeam,
             lastHomeScore = :homeScore,
@@ -58,6 +59,7 @@ interface TrackedTeamDao {
     suspend fun updateLastResult(
         teamId: String,
         summary: String,
+        fetchedAt: Long,
         homeTeam: String,
         awayTeam: String,
         homeScore: Int,

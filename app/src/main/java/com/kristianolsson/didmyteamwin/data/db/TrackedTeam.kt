@@ -19,6 +19,7 @@ data class TrackedTeam(
     // Last result
     val lastResultSummary: String? = null,
     val lastResultRevealed: Boolean = false,
+    val lastResultFetchedAt: Long? = null,
     val lastHomeTeam: String? = null,
     val lastAwayTeam: String? = null,
     val lastHomeScore: Int? = null,
