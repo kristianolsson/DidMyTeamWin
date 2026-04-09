@@ -33,6 +33,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.work.WorkInfo
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
@@ -112,7 +115,8 @@ private fun DebugCard(info: TeamDebugInfo) {
 
             DebugRow("Next event", info.team.nextEventName ?: "—")
             DebugRow("Event ID", info.team.nextEventId ?: "—")
-            DebugRow("Timestamp", info.team.nextEventTimestamp ?: "—")
+            DebugRow("Kickoff (UTC)", info.team.nextEventTimestamp ?: "—")
+            DebugRow("Kickoff (local)", localTime(info.team.nextEventTimestamp))
             DebugRow("Retry count", info.team.retryCount.toString())
             DebugRow("Last result", info.team.lastResultSummary ?: "—")
 
@@ -159,6 +163,18 @@ private fun DebugRow(
             color = valueColor,
             modifier = Modifier.weight(0.6f),
         )
+    }
+}
+
+private fun localTime(utcTimestamp: String?): String {
+    if (utcTimestamp.isNullOrBlank()) return "—"
+    return try {
+        val instant = Instant.parse("${utcTimestamp}Z")
+        val formatter = DateTimeFormatter.ofPattern("MMM d, h:mm a z")
+            .withZone(ZoneId.systemDefault())
+        formatter.format(instant)
+    } catch (e: Exception) {
+        "—"
     }
 }
 
