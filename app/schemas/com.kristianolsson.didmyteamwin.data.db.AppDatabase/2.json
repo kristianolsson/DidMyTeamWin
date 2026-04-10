@@ -1,0 +1,142 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "1a195947c846db85aeeb4d806a39a86f",
+    "entities": [
+      {
+        "tableName": "tracked_teams",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`idTeam` TEXT NOT NULL, `name` TEXT NOT NULL, `sport` TEXT, `league` TEXT, `country` TEXT, `badgeUrl` TEXT, `nextEventId` TEXT, `nextEventTimestamp` TEXT, `nextEventName` TEXT, `retryCount` INTEGER NOT NULL, `lastResultSummary` TEXT, `lastResultRevealed` INTEGER NOT NULL, `lastResultFetchedAt` INTEGER, `lastHomeTeam` TEXT, `lastAwayTeam` TEXT, `lastHomeScore` INTEGER, `lastAwayScore` INTEGER, `lastLeague` TEXT, `lastDate` TEXT, PRIMARY KEY(`idTeam`))",
+        "fields": [
+          {
+            "fieldPath": "idTeam",
+            "columnName": "idTeam",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sport",
+            "columnName": "sport",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "league",
+            "columnName": "league",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "country",
+            "columnName": "country",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "badgeUrl",
+            "columnName": "badgeUrl",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nextEventId",
+            "columnName": "nextEventId",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nextEventTimestamp",
+            "columnName": "nextEventTimestamp",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nextEventName",
+            "columnName": "nextEventName",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "retryCount",
+            "columnName": "retryCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastResultSummary",
+            "columnName": "lastResultSummary",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "lastResultRevealed",
+            "columnName": "lastResultRevealed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastResultFetchedAt",
+            "columnName": "lastResultFetchedAt",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "lastHomeTeam",
+            "columnName": "lastHomeTeam",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "lastAwayTeam",
+            "columnName": "lastAwayTeam",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "lastHomeScore",
+            "columnName": "lastHomeScore",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "lastAwayScore",
+            "columnName": "lastAwayScore",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "lastLeague",
+            "columnName": "lastLeague",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "lastDate",
+            "columnName": "lastDate",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "idTeam"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1a195947c846db85aeeb4d806a39a86f')"
+    ]
+  }
+}
