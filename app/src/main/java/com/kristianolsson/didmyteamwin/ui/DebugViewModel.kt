@@ -7,7 +7,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.kristianolsson.didmyteamwin.data.db.AppDatabase
 import com.kristianolsson.didmyteamwin.data.db.TrackedTeam
-import kotlinx.coroutines.delay
+import com.kristianolsson.didmyteamwin.worker.SchedulerHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -33,6 +33,13 @@ class DebugViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         refresh()
+    }
+
+    fun reschedule(teamId: String) {
+        viewModelScope.launch {
+            SchedulerHelper.scheduleNextGame(getApplication(), teamId)
+            refresh()
+        }
     }
 
     fun refresh() {

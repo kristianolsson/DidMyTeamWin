@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -83,14 +84,14 @@ fun DebugScreen(
             }
 
             items(items, key = { it.team.idTeam }) { info ->
-                DebugCard(info)
+                DebugCard(info, onReschedule = { viewModel.reschedule(info.team.idTeam) })
             }
         }
     }
 }
 
 @Composable
-private fun DebugCard(info: TeamDebugInfo) {
+private fun DebugCard(info: TeamDebugInfo, onReschedule: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -98,20 +99,34 @@ private fun DebugCard(info: TeamDebugInfo) {
         ),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = info.team.name,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-            )
-            Text(
-                text = "ID: ${info.team.idTeam}",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column {
+                    Text(
+                        text = info.team.name,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        text = "ID: ${info.team.idTeam}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                IconButton(onClick = onReschedule) {
+                    Icon(
+                        Icons.Default.PlayArrow,
+                        contentDescription = "Reschedule",
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
 
-            Spacer(Modifier.height(10.dp))
             HorizontalDivider(thickness = 0.5.dp)
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(8.dp))
 
             DebugRow("Next event", info.team.nextEventName ?: "—")
             DebugRow("Event ID", info.team.nextEventId ?: "—")
