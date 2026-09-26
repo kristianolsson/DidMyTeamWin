@@ -26,4 +26,7 @@ data class TrackedTeam(
     val lastAwayScore: Int? = null,
     val lastLeague: String? = null,
     val lastDate: String? = null,
+    // Last background error (kept for debugging)
+    val lastError: String? = null,
+    val lastErrorAt: Long? = null,
 )

@@ -68,6 +68,9 @@ interface TrackedTeamDao {
         date: String?,
     )
 
+    @Query("UPDATE tracked_teams SET lastError = :error, lastErrorAt = :at WHERE idTeam = :teamId")
+    suspend fun recordError(teamId: String, error: String, at: Long)
+
     @Query("UPDATE tracked_teams SET lastResultRevealed = 1 WHERE idTeam = :teamId")
     suspend fun markResultRevealed(teamId: String)
 }

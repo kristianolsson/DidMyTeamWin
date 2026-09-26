@@ -27,11 +27,14 @@ User adds team
         → Finished? → Notify + schedule next game
         → Not finished? → Retry in 1hr (max 12 retries)
         → Cancelled/Postponed? → Notify + schedule next game
+        → Network/429/5xx error? → Retry in 1hr (same 12-retry cap), then notify
 ```
 
 ### Key Design Decisions
 
 - **WorkManager** handles all background scheduling (survives Doze mode, reboots, battery optimization)
+- **Network constraint** — background jobs wait for connectivity instead of failing offline
+- **Last error persisted per team** (Room) and shown on the Debug screen, so failures can be diagnosed without logcat
 - **No exact alarms** — WorkManager timing is ±minutes, which is fine for this use case
 - **BootReceiver** reschedules all pending jobs after device restart
 - **Template-based summaries** in V1 (e.g., "MoDo Hockey beat Luleå HF 4-2 in SHL") — no LLM needed
@@ -66,6 +69,7 @@ app/src/main/java/com/kristianolsson/didmyteamwin/
 │       └── AppDatabase.kt      # Room database
 ├── worker/
 │   ├── GameCheckWorker.kt       # CoroutineWorker — fetches results, handles retries
+│   ├── ApiErrors.kt             # Classifies API errors (transient vs fatal) + labels
 │   └── SchedulerHelper.kt      # Schedules WorkManager jobs per team
 ├── notification/
 │   └── NotificationHelper.kt   # Notification channel + builders

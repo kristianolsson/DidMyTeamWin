@@ -134,6 +134,12 @@ private fun DebugCard(info: TeamDebugInfo, onReschedule: () -> Unit) {
             DebugRow("Kickoff (local)", localTime(info.team.nextEventTimestamp))
             DebugRow("Retry count", info.team.retryCount.toString())
             DebugRow("Last result", info.team.lastResultSummary ?: "—")
+            DebugRow(
+                "Last error",
+                lastErrorLabel(info.team.lastError, info.team.lastErrorAt),
+                if (info.team.lastError != null) MaterialTheme.colorScheme.error
+                else MaterialTheme.colorScheme.onSurface,
+            )
 
             Spacer(Modifier.height(10.dp))
             HorizontalDivider(thickness = 0.5.dp)
@@ -191,6 +197,14 @@ private fun localTime(utcTimestamp: String?): String {
     } catch (e: Exception) {
         "—"
     }
+}
+
+private fun lastErrorLabel(error: String?, atMillis: Long?): String {
+    if (error == null) return "—"
+    val timeStr = if (atMillis != null) {
+        SimpleDateFormat("MMM d HH:mm", Locale.getDefault()).format(Date(atMillis)) + " · "
+    } else ""
+    return "$timeStr$error"
 }
 
 private fun buildWorkLabel(state: WorkInfo.State?, runAtMillis: Long?): String {

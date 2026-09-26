@@ -3,8 +3,10 @@ package com.kristianolsson.didmyteamwin.worker
 import android.content.Context
 import android.util.Log
 import androidx.work.BackoffPolicy
+import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.NetworkType
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.kristianolsson.didmyteamwin.data.api.RetrofitInstance
@@ -18,6 +20,11 @@ object SchedulerHelper {
 
     private const val TAG = "SchedulerHelper"
     private val GAME_DURATION_BUFFER = Duration.ofHours(2)
+
+    // Hold background jobs until the device is online instead of failing offline
+    private val NETWORK_CONSTRAINT = Constraints.Builder()
+        .setRequiredNetworkType(NetworkType.CONNECTED)
+        .build()
 
     /**
      * Fetches the next game for [teamId] from the API and schedules a WorkManager
@@ -68,6 +75,7 @@ object SchedulerHelper {
             val workRequest = OneTimeWorkRequestBuilder<GameCheckWorker>()
                 .setInitialDelay(delayMs, TimeUnit.MILLISECONDS)
                 .setBackoffCriteria(BackoffPolicy.LINEAR, 1, TimeUnit.HOURS)
+                .setConstraints(NETWORK_CONSTRAINT)
                 .setInputData(workDataOf("teamId" to teamId))
                 .addTag("game_check_$teamId")
                 .build()
@@ -81,6 +89,9 @@ object SchedulerHelper {
             true
         } catch (e: Exception) {
             Log.e(TAG, "Failed to schedule next game for $teamId", e)
+            dao.recordError(teamId, "Schedule: ${ApiErrors.describe(e)}", System.currentTimeMillis())
+            // Don't leave the team orphaned — poll again later
+            scheduleEventPoll(context, teamId)
             false
         }
     }
@@ -92,6 +103,7 @@ object SchedulerHelper {
     private fun scheduleEventPoll(context: Context, teamId: String) {
         val workRequest = OneTimeWorkRequestBuilder<NextEventPollWorker>()
             .setInitialDelay(6, TimeUnit.HOURS)
+            .setConstraints(NETWORK_CONSTRAINT)
             .setInputData(workDataOf("teamId" to teamId))
             .addTag("event_poll_$teamId")
             .build()

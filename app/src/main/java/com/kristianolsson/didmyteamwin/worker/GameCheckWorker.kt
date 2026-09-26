@@ -34,6 +34,7 @@ class GameCheckWorker(
 
             if (event == null) {
                 Log.w(TAG, "Event $eventId not found in API response")
+                dao.recordError(teamId, "Game check: event $eventId not found", System.currentTimeMillis())
                 handleError(team.name, teamId, "Could not find game data")
                 return Result.failure()
             }
@@ -125,8 +126,16 @@ class GameCheckWorker(
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error checking result for ${team.name}", e)
-            handleError(team.name, teamId, "Error fetching game result")
-            Result.failure()
+            dao.recordError(teamId, "Game check: ${ApiErrors.describe(e)}", System.currentTimeMillis())
+
+            if (ApiErrors.isTransient(e) && team.retryCount < MAX_RETRIES) {
+                dao.incrementRetry(teamId)
+                Log.i(TAG, "Transient error, retrying in ~1hr (attempt ${team.retryCount + 1}/$MAX_RETRIES)")
+                Result.retry()
+            } else {
+                handleError(team.name, teamId, "Error fetching game result (${ApiErrors.shortLabel(e)})")
+                Result.failure()
+            }
         }
     }
 
